@@ -109,66 +109,16 @@ instalite/
 └── settings.gradle.kts
 ```
 
-## 🛠️ Build & install
+## 📥 Download
 
-**Requirements:** Android SDK (platform 36), JDK 17+ (the one bundled with Android Studio works).
-
-```bash
-git clone https://github.com/MohammadAlsheroa/instalite.git
-cd instalite
-
-# Windows
-gradlew.bat assembleFullDebug     # full version
-gradlew.bat assembleDmsDebug      # messages-only version
-# macOS / Linux
-./gradlew assembleFullDebug
-./gradlew assembleDmsDebug
-```
-
-`gradlew assembleDebug` builds both. The APKs end up at:
+Grab the latest APK from the [**Releases page**](https://github.com/MohammadAlsheroa/instalite/releases/latest) (current version **1.0.0**).
 
 | Version | APK |
 |---|---|
-| Full | `app/build/outputs/apk/full/debug/app-full-debug.apk` |
-| Messages only | `app/build/outputs/apk/dms/debug/app-dms-debug.apk` |
+| 📸 Full | [`InstaLite-1.0.0.apk`](https://github.com/MohammadAlsheroa/instalite/releases/download/v1.0.0/InstaLite-1.0.0.apk) |
+| 💬 Messages only | [`InstaLite-DMs-1.0.0.apk`](https://github.com/MohammadAlsheroa/instalite/releases/download/v1.0.0/InstaLite-DMs-1.0.0.apk) |
 
-### Install over Wi-Fi (no cable)
-
-1. On the phone: **Developer options → Wireless debugging → Pair device with pairing code**.
-2. On the computer:
-
-```bash
-adb pair  <phone-ip>:<pairing-port>  <pairing-code>
-adb connect <phone-ip>:<connect-port>        # the port shown on the Wireless debugging screen
-adb install -r app/build/outputs/apk/full/debug/app-full-debug.apk   # full version
-adb install -r app/build/outputs/apk/dms/debug/app-dms-debug.apk     # messages-only version
-```
-
-To switch from the full version to the messages-only one, uninstall the old app first:
-
-```bash
-adb uninstall com.mohammad.instalite
-adb install -r app/build/outputs/apk/dms/debug/app-dms-debug.apk
-adb shell monkey -p com.mohammad.instalite.dms -c android.intent.category.LAUNCHER 1   # open it
-```
-
-Or just open the project in Android Studio, pick the `fullDebug` or `dmsDebug` build variant, and press ▶️.
-
-## 🔧 When Instagram changes
-
-Instagram updates its web app often. The reel lock finds the viewer **by behavior** (a vertical scroll-snap container holding videos), not by class names, so it should survive most updates. If something breaks:
-
-| Symptom | Where to look |
-|---|---|
-| Reels tab visible again | `hideNavReels()` and the CSS selector in `inject.js` |
-| Can scroll past a DM reel | `findScroller()` / `lockScroller()` in `inject.js` |
-| Reels feed opens | `checkUrl()` in `MainActivity.kt` |
-| Messages-only version shows a non-DM page | `DMS_ALLOWED` / `dmsAllowed()` in `MainActivity.kt` |
-| Messages-only version shows feed/explore links | `dms.js` |
-| Notes tray or inbox Back arrow back again | `hideNotes()` / `tidyBack()` in `dms.js` |
-| Username or New message icon back in the inbox header | `tidyHeader()` in `dms.js` |
-
-To inspect the page live, temporarily add `WebView.setWebContentsDebuggingEnabled(true)` in `MainActivity.onCreate` and open `chrome://inspect` on your computer.
+Open the APK on your phone and allow installs from your browser or file manager when Android asks. Both versions can be installed side by side.
 
 ## ⚠️ Disclaimer
 
