@@ -12,6 +12,8 @@
 
 ---
 
+<img src="docs/icon.svg" alt="InstaLite icon" width="96" align="right"/>
+
 **InstaLite** is a tiny Android app that runs the Instagram mobile website full screen, with one goal: **keep the useful parts (feed, DMs, stories, profiles) and cut off the endless Reels scroll.**
 
 - 🚫 The **Reels tab is gone** from the bottom bar, and the Reels feed can't be opened at all.
@@ -80,8 +82,8 @@ instalite/
 │       │   └── inject.js          # Hides Reels tab, locks the DM reel viewer
 │       ├── java/com/mohammad/instalite/
 │       │   └── MainActivity.kt    # WebView, full screen, URL rules, uploads
-│       └── res/values/themes.xml
-├── docs/banner.svg
+│       └── res/                   # theme + adaptive app icon (vector)
+├── docs/                      # README banner + icon preview
 ├── build.gradle.kts
 └── settings.gradle.kts
 ```
