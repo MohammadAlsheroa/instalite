@@ -20,6 +20,26 @@
 - 💬 Reels your **friends send you in DMs still play**.
 - ↩️ Try to **swipe to the next reel** and you're sent straight **back to the chat**.
 
+## 🧩 Two versions
+
+The project builds **two apps from the same code** (Gradle product flavors). Both can be installed side by side.
+
+| Version | Flavor | App name | Package | What you get |
+|---|---|---|---|---|
+| 📸 **Full** | `full` | InstaLite | `com.mohammad.instalite` | Feed, DMs, stories, profiles, with no Reels feed (everything described below) |
+| 💬 **Messages only** | `dms` | InstaLite DMs | `com.mohammad.instalite.dms` | **Only Instagram DMs.** Opens on the inbox, and every other page is blocked |
+
+### 💬 Messages-only version (`dms`)
+
+- 📥 Opens straight on the **DM inbox** (`/direct/inbox/`).
+- 🚫 **Feed, Explore, Reels, profiles, notifications and search are blocked.** Any navigation outside `/direct/` sends you back to the inbox.
+- 🙈 Nav links that leave the DMs (home, explore, reels, create, profile) are **hidden** by `dms.js`.
+- 🧹 **Cleaner inbox:** the Notes tray (note bubbles above "Messages"), the useless Back arrow, the username/account switcher and the New message icon are hidden from the inbox header, so the **search bar is the first thing you see** (it stays in the same spot). Inside a chat, Back still returns to the inbox.
+- 🔑 Login, 2FA and security-check pages (`/accounts/`, `/challenge/`, `/two_factor`) still work so you can sign in.
+- 🎬 Posts, reels and stories **friends send you in a chat still open** (`/p/`, `/reel/`, `/stories/`). The single-reel lock from the full version still applies.
+
+Everything else (full screen, stays logged in, uploads, external links) works the same in both versions.
+
 ## ✨ Features
 
 | | Feature | How |
@@ -75,13 +95,14 @@ If the Close button can't be found, InstaLite reloads the chat as a fallback. Ei
 ```
 instalite/
 ├── app/
-│   ├── build.gradle.kts
+│   ├── build.gradle.kts           # full + dms product flavors
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── assets/
-│       │   └── inject.js          # Hides Reels tab, locks the DM reel viewer
+│       │   ├── inject.js          # Hides Reels tab, locks the DM reel viewer (both versions)
+│       │   └── dms.js             # Messages-only version: hides nav links that leave the DMs
 │       ├── java/com/mohammad/instalite/
-│       │   └── MainActivity.kt    # WebView, full screen, URL rules, uploads
+│       │   └── MainActivity.kt    # WebView, full screen, URL rules, uploads, DMs-only rule
 │       └── res/                   # theme + adaptive app icon (vector)
 ├── docs/                      # README banner + icon preview
 ├── build.gradle.kts
@@ -97,12 +118,19 @@ git clone https://github.com/MohammadAlsheroa/instalite.git
 cd instalite
 
 # Windows
-gradlew.bat assembleDebug
+gradlew.bat assembleFullDebug     # full version
+gradlew.bat assembleDmsDebug      # messages-only version
 # macOS / Linux
-./gradlew assembleDebug
+./gradlew assembleFullDebug
+./gradlew assembleDmsDebug
 ```
 
-The APK ends up at `app/build/outputs/apk/debug/app-debug.apk`.
+`gradlew assembleDebug` builds both. The APKs end up at:
+
+| Version | APK |
+|---|---|
+| Full | `app/build/outputs/apk/full/debug/app-full-debug.apk` |
+| Messages only | `app/build/outputs/apk/dms/debug/app-dms-debug.apk` |
 
 ### Install over Wi-Fi (no cable)
 
@@ -112,10 +140,19 @@ The APK ends up at `app/build/outputs/apk/debug/app-debug.apk`.
 ```bash
 adb pair  <phone-ip>:<pairing-port>  <pairing-code>
 adb connect <phone-ip>:<connect-port>        # the port shown on the Wireless debugging screen
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r app/build/outputs/apk/full/debug/app-full-debug.apk   # full version
+adb install -r app/build/outputs/apk/dms/debug/app-dms-debug.apk     # messages-only version
 ```
 
-Or just open the project in Android Studio and press ▶️.
+To switch from the full version to the messages-only one, uninstall the old app first:
+
+```bash
+adb uninstall com.mohammad.instalite
+adb install -r app/build/outputs/apk/dms/debug/app-dms-debug.apk
+adb shell monkey -p com.mohammad.instalite.dms -c android.intent.category.LAUNCHER 1   # open it
+```
+
+Or just open the project in Android Studio, pick the `fullDebug` or `dmsDebug` build variant, and press ▶️.
 
 ## 🔧 When Instagram changes
 
@@ -126,6 +163,10 @@ Instagram updates its web app often. The reel lock finds the viewer **by behavio
 | Reels tab visible again | `hideNavReels()` and the CSS selector in `inject.js` |
 | Can scroll past a DM reel | `findScroller()` / `lockScroller()` in `inject.js` |
 | Reels feed opens | `checkUrl()` in `MainActivity.kt` |
+| Messages-only version shows a non-DM page | `DMS_ALLOWED` / `dmsAllowed()` in `MainActivity.kt` |
+| Messages-only version shows feed/explore links | `dms.js` |
+| Notes tray or inbox Back arrow back again | `hideNotes()` / `tidyBack()` in `dms.js` |
+| Username or New message icon back in the inbox header | `tidyHeader()` in `dms.js` |
 
 To inspect the page live, temporarily add `WebView.setWebContentsDebuggingEnabled(true)` in `MainActivity.onCreate` and open `chrome://inspect` on your computer.
 

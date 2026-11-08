@@ -15,6 +15,29 @@ android {
         versionName = "1.0"
     }
 
+    buildFeatures { buildConfig = true }
+
+    // Two versions from one codebase:
+    //  full -> the original InstaLite (feed, DMs, stories, profiles; no Reels feed)
+    //  dms  -> messages only: locked to Instagram DMs (/direct/), everything else blocked
+    flavorDimensions += "mode"
+    productFlavors {
+        create("full") {
+            dimension = "mode"
+            resValue("string", "app_name", "InstaLite")
+            buildConfigField("boolean", "DMS_ONLY", "false")
+            buildConfigField("String", "HOME_URL", "\"https://www.instagram.com/\"")
+        }
+        create("dms") {
+            dimension = "mode"
+            applicationIdSuffix = ".dms"
+            versionNameSuffix = "-dms"
+            resValue("string", "app_name", "InstaLite DMs")
+            buildConfigField("boolean", "DMS_ONLY", "true")
+            buildConfigField("String", "HOME_URL", "\"https://www.instagram.com/direct/inbox/\"")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

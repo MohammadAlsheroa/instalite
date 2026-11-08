@@ -50,6 +50,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         goFullscreen()
 
+        // Debug builds can be inspected from chrome://inspect.
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         webView = WebView(this)
         setContentView(webView)
 
@@ -70,7 +72,11 @@ class MainActivity : ComponentActivity() {
             setAcceptThirdPartyCookies(webView, true)
         }
 
-        val script = assets.open("inject.js").bufferedReader().use { it.readText() }
+        var script = assets.open("inject.js").bufferedReader().use { it.readText() }
+        if (BuildConfig.DMS_ONLY) {
+            // Messages-only build: also hide every nav link that leaves the DMs.
+            script += "\n" + assets.open("dms.js").bufferedReader().use { it.readText() }
+        }
         val docStart = WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)
         if (docStart) {
             WebViewCompat.addDocumentStartJavaScript(webView, script, setOf("https://*.instagram.com"))
@@ -136,6 +142,15 @@ class MainActivity : ComponentActivity() {
         if (!isInstagram(uri)) return false
         val path = uri.path ?: "/"
 
+        if (BuildConfig.DMS_ONLY && !dmsAllowed(path)) {
+            // Messages-only build: anything outside the DMs goes back to the inbox.
+            activeReel = null
+            reelOrigin = null
+            returning = false
+            webView.post { webView.loadUrl(HOME) }
+            return true
+        }
+
         if (REELS_FEED.matches(path)) {
             returnFromReel()
             return true
@@ -188,6 +203,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** Paths the messages-only build may show: DMs, login/security pages, and content opened from a chat. */
+    private fun dmsAllowed(path: String): Boolean =
+        DMS_ALLOWED.any { path == it.trimEnd('/') || path.startsWith(it) }
+
     private fun samePath(a: String, b: String) =
         Uri.parse(a).path?.trimEnd('/') == Uri.parse(b).path?.trimEnd('/')
 
@@ -220,7 +239,12 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val HOME = "https://www.instagram.com/"
+        private val HOME = BuildConfig.HOME_URL
+        private val DMS_ALLOWED = listOf(
+            "/direct/",                                 // inbox, chats, requests, new message
+            "/accounts/", "/challenge/", "/two_factor", // login, 2FA, security checks
+            "/reel/", "/p/", "/stories/",               // posts/reels/stories friends send in a chat
+        )
         private val REELS_FEED = Regex("^/reels/?$")
         private val REEL = Regex("^/(reel|reels)/([^/]+)")
     }

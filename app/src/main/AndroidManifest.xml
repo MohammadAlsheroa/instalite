@@ -7,7 +7,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="InstaLite"
+        android:label="@string/app_name"
         android:theme="@style/Theme.InstaLite"
         android:hardwareAccelerated="true">
         <activity
