@@ -1,0 +1,16 @@
+# Gradle / Kotlin
+.gradle/
+.kotlin/
+build/
+app/build/
+
+# Local machine config
+local.properties
+*.iml
+.idea/
+.DS_Store
+captures/
+*.apk
+*.aab
+*.keystore
+*.jks
